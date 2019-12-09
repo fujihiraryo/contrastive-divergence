@@ -1,0 +1,314 @@
+%コンパイルはplatex
+\documentclass[9pt]{jsarticle}
+
+%パッケージ
+\usepackage[top=30truemm,bottom=30truemm,left=25truemm,right=25truemm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{autobreak}
+\usepackage{mathrsfs}
+\usepackage{xpatch}
+\usepackage{latexsym}
+\usepackage{mathtools}
+\usepackage{comment}
+\usepackage{color}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+%定理環境
+\theoremstyle{definition}
+\newtheorem{theorem}{定理}[section]
+\newtheorem{definition}[theorem]{定義}
+\newtheorem{example}[theorem]{例}
+\newtheorem{lemma}[theorem]{補題}
+\newtheorem{remark}[theorem]{注意}
+\newtheorem{proposition}[theorem]{命題}
+\newtheorem{corollary}[theorem]{系}
+\newtheorem*{_proof*}{証明}
+
+%定義
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\xsum}{\sum_{x\in\mathcal{X}}}
+\newcommand{\ysum}{\sum_{y\in\mathcal{X}}}
+\newcommand{\parH}{\frac{\partial H}{\partial\theta}} %Hの微分
+\newcommand{\parlog}{\frac{\partial \log p}{\partial\theta}}
+\newcommand{\paru}{\frac{\partial u}{\partial\theta}} %uの微分
+\newcommand{\paruu}{\frac{\partial \widetilde{u}}{\partial\theta}}
+\newcommand{\parp}{\frac{\partial p}{\partial\theta}} %pの微分
+\newcommand{\parss}{\frac{\partial s}{\partial\theta}} %sの微分
+\newcommand{\parT}{\frac{\partial T}{\partial\theta}} %Tの微分
+\def\qed{\hfill $\Box$} %証明終わり
+\renewcommand{\thetheorem}{\arabic{theorem}} %定理0.1を定理1にする
+
+%数式の途中で改行を許す
+\allowdisplaybreaks[1]
+
+%ページ番号を消す
+\pagestyle{empty}
+
+%タイトル
+\title{Contrastive Divergence法の漸近理論と情報幾何}
+\author{藤平 燎}
+\date{}
+
+%本文
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+Contrastive Divergence (CD) 法とは，
+計算量的に困難な正規化定数の評価が必要となる
+統計的モデルのパラメータ推定問題において，
+近似的に最尤推定を行うために
+Hinton \cite{Hinton}によって提案された手法である．
+CD法は，
+ある更新則に従ってパラメータを逐次更新する手法であり，
+最尤推定量に近い推定量が得られることが経験的に知られている．
+しかしながら，
+パラメータの更新則を表す力学系の収束性や，
+その収束先として得られる推定量の一致性の証明は，
+これまで与えられていなかった．
+本研究の目的は，
+CD法におけるパラメータ更新則を表す力学系の研究を通じ，
+CD法によって得られる推定量の漸近的性質を明らかにすることにある．
+
+状態空間$\X$を有限集合，
+パラメータ空間$\Theta$を
+$\mathbb{R}^{d}$の開部分集合とする．
+$\X$上の統計的モデル
+$\{p(x;\theta)\}_{\theta\in\Theta}$
+と未知の確率分布$p(x;\theta_{*})$に従うi.i.d.観測データ
+$(X_1,\dots,X_{N})\in\X^N$が与えられたとき，
+真のパラメータ値$\theta_{*}\in\Theta$
+を推定する問題をパラメータ推定問題といい，
+観測データをもとに推定値を与える関数
+$\hat{\theta}_{N}:\X^N\to \Theta$
+をパラメータ$\theta$の推定量という．
+統計的モデル
+$\{p(x;\theta)\}_{\theta\in\Theta}$
+に対して，
+$\displaystyle\sum_{x\in\X}p(x;\theta)u(x;\theta)=0$
+を満たし，かつ
+$\displaystyle\sum_{x\in\X}p(x;\theta)
+\frac{\partial u}{\partial\theta}(x;\theta)$
+が正則行列
+となるような関数$u:\X\times\Theta\to\R^d$を推定関数といい，
+\[
+    \psi_{N}(\theta):=
+    \frac{1}{N}\sum_{n=1}^{N}u(X_{n};\theta)
+\]
+の零点として定義される推定量
+$\hat{\theta}_{N}$
+をZ推定量という．
+上記設定のもとで，
+Z推定量は
+$N\to\infty$のとき
+強一致性と漸近正規性をもつことが知られている．
+本論文では，
+観測データ$(X_{1},\dots,X_{N})$が与えられたとき，
+$\theta$を時刻$t$の関数$\theta(t)$と見て，$\hat{\theta}_{N}$を平衡点とする力学系
+\[
+    \dot{\theta}=
+    \psi_{N}(\theta)
+\]
+を考え，これを推定力学系と呼ぶことにする．
+ここに，$\dot\theta$は$t$に関する$\theta$の微分である．
+固有値の実部がすべて負であるような正方行列を安定行列といい，
+$\displaystyle
+\frac{\partial\psi_{N}}{\partial\theta}(\hat{\theta}_{N})$
+が安定行列ならば，
+$\hat{\theta}_{N}$は局所漸近安定な平衡点となる．
+このとき，
+$\hat{\theta}_{N}$に十分近い初期点をとって
+推定力学系に従ってパラメータを更新することで，
+$t\to\infty$のとき，
+パラメータは$\hat{\theta}_{N}$に収束する．
+
+本研究の第1の主結果は以下の定理である．
+\begin{theorem}\label{maintheorem1}
+    関数$\psi_{*}:\Theta\to\R^d$を
+    \[
+        \psi_{*}(\theta)
+        :=
+        \sum_{x\in\X}p(x;\theta_{*})u(x;\theta)
+    \]
+    で定義する．
+    $\displaystyle
+    \frac{\partial\psi_{*}}{\partial\theta}(\theta_{*})$
+    が安定行列ならば，
+    $\displaystyle
+    \frac{\partial\psi_{N}}{\partial\theta}(\hat{\theta}_{N})$
+    が安定行列となる確率は，$N\to\infty$のとき$1$に収束する．
+    特に，$\hat{\theta}_{N}$が推定力学系
+    $\dot{\theta}=\psi_{N}(\theta)$
+    の局所漸近安定な平衡点となる確率は，$N\to\infty$のとき$1$に収束する．
+\end{theorem}
+
+統計的モデルが
+\[
+    p(x;\theta)=
+    \frac{\exp(-H(x;\theta))}{Z(\theta)},
+    \qquad
+    \left( Z(\theta)
+    :=
+    \sum_{x\in\X}\exp(-H(x;\theta)) \right)
+\]
+と表される場合を考えよう．
+このようなモデルをエネルギーベースモデルといい，
+$H(x;\theta)$をエネルギー関数，
+$Z(\theta)$を正規化定数または分配関数という． 
+エネルギーベースモデルは，様々な分野，
+例えば画像処理などで用いられるマルコフ確率場を含む
+重要な統計的モデルである．
+しかしながら，
+例えば$\X=\{0,1\}^L$のとき，
+$Z(\theta)$の計算量は$O(2^L)$となることからも分かるように，
+$Z(\theta)$の評価には，
+しばしば計算量的な困難が伴う．
+
+エネルギーベースモデルを用いた場合の最尤推定における推定関数は
+\[
+    s(x;\theta)
+    :=
+    \frac{\partial\log p}{\partial\theta}(x;\theta)
+    =
+    \sum_{y\in\X}
+    p(y;\theta)\parH(y;\theta)-\parH(x;\theta),
+\]
+であり，対応する推定力学系は
+\[
+    \dot{\theta}=
+    \sum_{y\in\X}p(y;\theta)\parH(y;\theta)
+    -\frac{1}{N}\sum_{n=1}^{N}
+    \parH(X_{n};\theta)
+\]
+となる．
+ここで，
+右辺第1項は$p(y;\theta)$に関する期待値であり，
+それを厳密に評価するためには
+計算量的に困難な
+$Z(\theta)$の評価が必要となる．
+$Z(\theta)$の直接計算を回避し，
+近似的に期待値を評価する方法の一つに
+マルコフ連鎖モンテカルロ法がある．
+しかしながら，マルコフ連鎖モンテカルロ法では，
+$\theta$の値を更新するごとに，
+$p(y;\theta)$に収束するマルコフ連鎖を新たに構成し，
+十分な回数の遷移を行わなければならない．
+
+この問題を回避するため，
+Hinton \cite{Hinton}は，
+マルコフ連鎖の初期状態を観測データ
+$(X_{1},\dots,X_{n})$とし，
+遷移回数を1回だけとする
+パラメータ更新則：
+\[
+    \dot{\theta}=
+    \frac{1}{N}
+    \sum_{n=1}^{N}
+    \left(
+        \sum_{y\in\X}
+        T(y|X_{n};\theta)
+        \parH(y;\theta)
+        -\parH(X_{n};\theta)
+    \right)
+\]
+を提案し，Contrastive Divergence (CD) 法と名付けた．
+ここに，$T(y|x;\theta)$は，マルコフ連鎖の遷移核である．
+このパラメータ更新則に従って推定を行うと，最尤推定値に
+近い値が得られることが経験的には知られていたが，
+それを数学的に正当化する研究はこれまでなかった．
+%これが本研究に着手した直接の動機である．
+
+%この経験的事実を正当化するため，
+本研究では，まず，以下の量を導入する．
+\begin{align*}
+    u^\mathrm{CD}(x;\theta)
+    &:=s(x;\theta)
+    -\sum_{y\in\X}T(y|x;\theta)s(y;\theta)\\
+    \psi_{N}^\mathrm{CD}(\theta)
+    &:=\frac{1}{N}\sum_{n=1}^N u^\mathrm{CD}(X_{N};\theta)\\
+    \psi_{*}^\mathrm{CD}(\theta)
+    &:=\xsum p(x;\theta_{*})u^\mathrm{CD}(x;\theta)
+\end{align*}
+すると，$u^\mathrm{CD}(x;\theta)$は推定関数となり，
+対応する推定力学系
+$$\dot{\theta}=\psi_{N}^\mathrm{CD}(\theta)$$
+は，CD法のパラメータ更新則に一致することが証明できる．
+従って，
+$\psi_{N}^\mathrm{CD}$の零点を$\hat{\theta}_{N}^\mathrm{CD}$
+とおくと，
+$\hat{\theta}_{N}^\mathrm{CD}$はZ推定量であり，
+$N\to\infty$のとき
+強一致性と漸近正規性をもつ．
+さらに以下の事実が証明できる．
+これが本研究の第2の主結果である．
+
+\begin{theorem}\label{maintheorem2}
+    $\displaystyle
+    \frac{\partial\psi_{*}^\mathrm{CD}}{\partial\theta}
+    (\theta_{*})$は安定行列である.
+\end{theorem}
+
+定理\ref{maintheorem1}と定理\ref{maintheorem2}を組み合わせることで，
+以下の系を得る．
+これは，CD法が経験的に成功をおさめてきたことに対する
+一つの数学的根拠を与えるものである．
+
+\begin{corollary}
+    $\hat{\theta}_{N}^\mathrm{CD}$が推定力学系
+    $\dot{\theta}=\psi_{N}^\mathrm{CD}(\theta)$
+    の局所漸近安定な平衡点となる確率は，
+    $N\to\infty$のとき$1$に収束する．
+\end{corollary}
+
+
+本研究ではさらに，
+推定関数$u^\mathrm{CD}(x;\theta)$
+から誘導される双対幾何構造についても考察を行った．
+推定関数が与えられたとき，
+自然なプレコントラスト関数を通して，
+統計的モデルに誘導される統計多様体構造には，
+捩率が生じ得ることが知られている \cite{Henmi}．
+ただし，
+そのような統計的モデルと推定関数の具体例は，
+ややアドホックなもの
+しか知られていなかった．
+本論文では，
+より自然に捩率が登場する例として，
+ある非対称な構造をもつボルツマンマシンにCD法を適用したとき，
+対応する推定関数が非可積分になり，
+誘導される双対アファイン接続の一方に捩率が生じることを見出した．
+
+    \begin{thebibliography}{99}
+        \bibitem{Hinton}
+        G.~E.~Hinton, 
+        ``Training Products of Experts 
+        by Minimizing Contrastive Divergence,'' 
+        {\it Neural Computation}, 
+        {\bf 14}, 
+        pp.1771-1800 
+        (2002).
+        
+        \bibitem{van}
+        A.~W.~van der Vaart, 
+        {\it Asymptotic Statistics}, 
+        Cambridge University Press 
+        (1998).
+        
+        \bibitem{Henmi}
+        逸見昌之, 
+        ``推定関数と捩れを許す統計多様体,'' 
+        数理解析研究所講究録 
+        {\bf 1916}, 
+        pp.18-36 
+        (2014).
+    \end{thebibliography}
+\end{document}
